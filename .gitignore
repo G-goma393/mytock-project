@@ -1,0 +1,21 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+mytock
+
+# Dependency directories
+vendor/
+
+# Go workspaces
+go.work
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+.tlock  # 封印したファイル自体は上げない設計にする場合
+.env

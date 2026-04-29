@@ -11,7 +11,7 @@ func main() {
 
 	// tlock.Encrypt が存在するか参照して、ロードを確認する
 	// (実行はしないので、値を変数に入れない '_' を使います)
-	//_ = tlock.Encrypt
+	//_ = tlock.encrypt
 
 	fmt.Println("tlock ライブラリのロードに成功しました。")
 
