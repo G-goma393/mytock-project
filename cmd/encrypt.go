@@ -4,21 +4,22 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bytes"
 	"fmt"
-
+	"github.com/drand/tlock"
+	"github.com/drand/tlock/http"
 	"github.com/spf13/cobra"
+	"io"
+	"log"
+	"os"
+	"time"
 )
 
 // encryptCmd represents the encrypt command
 var encryptCmd = &cobra.Command{
 	Use:   "encrypt",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "short:Let's encrypt the file",
+	Long:  `"long:Let's encrypt the file"`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("わぁ")
 	},
