@@ -6,14 +6,20 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"github.com/drand/tlock"
-	"github.com/drand/tlock/http"
-	"github.com/spf13/cobra"
 	"io"
 	"log"
 	"os"
 	"time"
+	"github.com/drand/tlock"
+	"github.com/drand/tlock/http"
+	"github.com/spf13/cobra"
 )
+
+type CryptTask struct{
+	FileName string
+	EncryptedName string
+	Network tlock.Network
+}
 
 // encryptCmd represents the encrypt command
 var encryptCmd = &cobra.Command{
@@ -21,7 +27,20 @@ var encryptCmd = &cobra.Command{
 	Short: "short:Let's encrypt the file",
 	Long:  `"long:Let's encrypt the file"`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("わぁ")
+		fmt.Println("start encrypt")
+		fileName := args[0]
+		in, _ := os.Open(fileName)
+		defer in.Close()
+
+		network, _:= http.NewNetwork(host, chainHash)
+		duration := 10 * time.second
+		roundNumber := network.RoundNumber(time.Now().Add(duration))
+
+		var cipherData bytes.Buffer
+		if err := tlock.New(network).Encrypt(&cipherData, in, roundNumber); err != mil{
+			log.Fatalf("ohh, lol: %v" err)
+		}
+		os.WriteFile(encryptedName, cipherData.Bytes(), 0644)
 	},
 }
 
