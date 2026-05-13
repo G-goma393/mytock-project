@@ -1,26 +1,24 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
-	"os"
-
+	"fmt"
+	"github.com/drand/tlock"
+	tlockHttp "github.com/drand/tlock/networks/http"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"os"
 )
 
-// rootCmd represents the base command when called without any subcommands
+var SharedNetwork tlock.Network
+
 var rootCmd = &cobra.Command{
 	Use:   "mytock-project",
-	Short: "これを書き直せってよここはショートかな",
-	Long:  `ここがメインの説明なんかね。ちな今いるところはLong`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Short: "共通設定やネットワークの初期化",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		return setupInfrastructure()
+	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -28,17 +26,24 @@ func Execute() {
 	}
 }
 
-var verbose bool
-
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+	cobra.OnInitialize(initConfig)
+}
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mytock-project.yaml)")
+func initConfig() {
+	viper.SetDefault("host", "https://api.drand.sh/")
+	viper.SetDefault("chainHash", "52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971")
+}
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "なんこれ見えてる？ちなroot.goにいる")
+func setupInfrastructure() error {
+	host := viper.GetString("host")
+	chainHash := viper.GetString("chainHash")
+
+	net, err := tlockHttp.NewNetwork(host, chainHash)
+	if err != nil {
+		return fmt.Errorf("ネットワークの構築に失敗しました: %w", err)
+	}
+
+	SharedNetwork = net
+	return nil
 }
