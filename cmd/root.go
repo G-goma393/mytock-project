@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+var cfgFile string
 var SharedNetwork tlock.Network
 
 var rootCmd = &cobra.Command{
@@ -28,11 +29,33 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "configuration file path : $HOME/.mytock.yaml")
 }
 
 func initConfig() {
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	} else {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		viper.AddConfigPath(home)
+		viper.SetConfigType("yaml")
+		viper.SetConfigName(".mytock")
+	}
+	//環境変数まわり
+	viper.SetEnvPrefix("mytock") //例:MYTOCK_HOSTがあれば読み込むように
+	viper.AutomaticEnv()
+	//デフォルト値
 	viper.SetDefault("host", "https://api.drand.sh/")
 	viper.SetDefault("chainHash", "52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971")
+
+	if err := viper.ReadInConfig(); err == nil {
+		//usedでいいのか楽だなぁ
+		fmt.Println("configuration file loading successful : ", viper.ConfigFileUsed())
+	}
 }
 
 func setupInfrastructure() error {
@@ -41,7 +64,7 @@ func setupInfrastructure() error {
 
 	net, err := tlockHttp.NewNetwork(host, chainHash)
 	if err != nil {
-		return fmt.Errorf("ネットワークの構築に失敗しました: %w", err)
+		return fmt.Errorf("drant network setup failed: %w", err)
 	}
 
 	SharedNetwork = net

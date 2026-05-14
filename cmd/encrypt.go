@@ -1,6 +1,3 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -21,18 +18,24 @@ type CryptTask struct{
 	Network tlock.Network
 }
 
-// encryptCmd represents the encrypt command
 var encryptCmd = &cobra.Command{
-	Use:   "encrypt",
-	Short: "short:Let's encrypt the file",
-	Long:  `"long:Let's encrypt the file"`,
+	Use:   "encrypt [fileName]",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("start encrypt")
-		fileName := args[0]
-		in, _ := os.Open(fileName)
+		targetName := args[0]
+
+		task := CryptTask{
+			FileName: targetFile,
+			EncryptName: targetFile + ".tle"
+			Network: SharedNetwork,
+		}
+		
+		in, _ := os.Open(targetName)
 		defer in.Close()
 
-		network, _:= http.NewNetwork(host, chainHash)
+		//514am:durationはコマンド引数から受け取るよう
+		// それからより詳細な設計書を作ろう
+
 		duration := 10 * time.second
 		roundNumber := network.RoundNumber(time.Now().Add(duration))
 
@@ -47,13 +50,4 @@ var encryptCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(encryptCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// encryptCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// encryptCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
