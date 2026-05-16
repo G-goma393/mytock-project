@@ -9,6 +9,15 @@ drandネットワークを利用したタイムロック暗号化ツールとそ
 <file名>の暗号化、復号可能時間<duration>
 drandネットワークの設定はviper
 
+./mytock-project encrypt
+これ単体で実行されると
+`panic: runtime error: index out of range [0] with length 0`
+っていうふうにパニックになっちゃう
+ちゃんと返さなきゃ使い方を返してあげよう
+
+それだけじゃなくて
+パニックにならないための処理が必要不可欠だね
+
 ### ls
 ./mytock-project ls
 
@@ -63,13 +72,13 @@ fileName tag復号化できるファイル
 
 
 chainHashとかの値って人それぞれじゃない？だとしたら別途初期設定をするための何かを入れたほうが良いね
-SQLiteを取り入れる
+
 encryptコマンドの実装
 decryptコマンドの実装
 lsコマンドの実装
 addコマンドの実装
 detachコマンドの実装
-
+SQLite
 
 
 

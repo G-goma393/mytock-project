@@ -1,34 +1,25 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
-	"os"
-
+	"fmt"
+	"github.com/drand/tlock"
+	tlockHttp "github.com/drand/tlock/networks/http"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"os"
 )
 
+var cfgFile string
+var SharedNetwork tlock.Network
 
-
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "mytock-project",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Short: "共通設定やネットワークの初期化",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		return setupInfrastructure()
+	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -37,15 +28,45 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mytock-project.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "configuration file path : $HOME/.mytock.yaml")
 }
 
+func initConfig() {
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	} else {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		viper.AddConfigPath(home)
+		viper.SetConfigType("yaml")
+		viper.SetConfigName(".mytock")
+	}
+	//環境変数まわり
+	viper.SetEnvPrefix("mytock") //例:MYTOCK_HOSTがあれば読み込むように
+	viper.AutomaticEnv()
+	//デフォルト値
+	viper.SetDefault("host", "https://api.drand.sh/")
+	viper.SetDefault("chainHash", "52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971")
 
+	if err := viper.ReadInConfig(); err == nil {
+		//usedでいいのか楽だなぁ
+		fmt.Println("configuration file loading successful : ", viper.ConfigFileUsed())
+	}
+}
+
+func setupInfrastructure() error {
+	host := viper.GetString("host")
+	chainHash := viper.GetString("chainHash")
+
+	net, err := tlockHttp.NewNetwork(host, chainHash)
+	if err != nil {
+		return fmt.Errorf("drant network setup failed: %w", err)
+	}
+
+	SharedNetwork = net
+	return nil
+}

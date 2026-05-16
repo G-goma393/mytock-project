@@ -1,40 +1,37 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
+	"bytes"
 	"fmt"
-
+	"github.com/drand/tlock"
 	"github.com/spf13/cobra"
+	"os"
 )
 
-// decryptCmd represents the decrypt command
 var decryptCmd = &cobra.Command{
-	Use:   "decrypt",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "decrypt [fileName].tle",
+	Short: "(ショート説明)Decrypt the time lock cipher",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("decrypt called")
+		fmt.Println("start decrypt")
+		targetFile := args[0]
+
+		task := CryptTask{
+			EncryptedName: targetFile,
+			Network:       SharedNetwork,
+		}
+
+		encIn, _ := os.Open(task.EncryptedName)
+		defer encIn.Close()
+
+		var plainData bytes.Buffer
+		if err := tlock.New(task.Network).Decrypt(&plainData, encIn); err != nil {
+			fmt.Printf("Decryption failed ... as expected: %v\n", err)
+		} else {
+			fmt.Printf("SUCCESSFUL \n source: %s\n", plainData.String())
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(decryptCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// decryptCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// decryptCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
