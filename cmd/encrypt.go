@@ -19,6 +19,7 @@ type CryptTask struct {
 var encryptCmd = &cobra.Command{
 	Use:   "encrypt [fileName] --[duration]",
 	Short: "(ショート説明)Encrypts the file with a time lock",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("start encrypt")
 		targetFile := args[0]
